@@ -1,0 +1,32 @@
+clear all
+% ----- Random MISO channel generation ------------------
+Ntx = 64;
+Sc = 1200;
+D=1e6/2;
+alpha = 1;
+Rank = 3;
+Hphase = rand(Ntx,Sc)*2*pi; % iniform phase in [0, 2pi]
+for idNtx = 1:Ntx
+  Hamp(idNtx,:) = 1/sqrt(2*alpha*pi*D)*exp(-([-Sc/2:Sc/2-1]-randn*600).^2/2/D);
+end
+
+
+
+H=Hamp.*exp(1i*Hphase);
+pw = sum(H.*conj(H),2);
+H=H./sqrt(repmat(pw,[1 Sc]))/Ntx;
+
+% H=reshape(fft(fft(reshape(Hamp.*exp(1i*Hphase),[ 8 8 Sc]),8,1),8,2),[64 1200]);
+[u,s,v] = svd(H);
+s(Rank+1:end,Rank+1:end)=0;
+Hreg = u*s*v';
+
+ figure, 
+ subplot 121  
+ mesh(abs(H))  
+ view([40 10 120])
+ 
+ subplot 122  
+ mesh(abs(Hreg))  
+ view([40 10 120])
+ 
